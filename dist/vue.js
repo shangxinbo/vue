@@ -975,7 +975,7 @@ function defineReactive$$1 (
     get: function reactiveGetter () {
       var value = getter ? getter.call(obj) : val;
       console.log(Dep.target);
-      if (Dep.target) {      // 这里为什么要在访问属性的时候进行收集呢？
+      if (Dep.target) {      // 这里为什么要在访问属性的时候进行收集呢？,在初始化时进行依赖收集，如果有就是在初始化过程，如果没有则是普通的数据读取
         dep.depend();
         if (childOb) {
           childOb.dep.depend();
