@@ -790,10 +790,12 @@ var targetStack = [];
 function pushTarget (_target) {
   if (Dep.target) { targetStack.push(Dep.target); }
   Dep.target = _target;
+  console.log(Dep.target);
 }
 
 function popTarget () {
   Dep.target = targetStack.pop();
+  console.log(Dep.target);
 }
 
 /*
@@ -860,17 +862,17 @@ var observerState = {
  */
 var Observer = function Observer (value) {
   this.value = value;
-  this.dep = new Dep();
+  this.dep = new Dep(); // 每个observe 对应一个dep，每个dep 对应多个watcher
   this.vmCount = 0;
-  def(value, '__ob__', this);
+  def(value, '__ob__', this);  // 每个被观察的数据都有__ob__属性做标记
   if (Array.isArray(value)) {
-    var augment = hasProto
+    var augment = hasProto  // 是否支持__proto__,根据这个重新定义数组类型的数据的数组操作方法
       ? protoAugment
       : copyAugment;
     augment(value, arrayMethods, arrayKeys);
     this.observeArray(value);
   } else {
-    this.walk(value);
+    this.walk(value);    // 如果是一个纯object
   }
 };
 
@@ -882,7 +884,7 @@ var Observer = function Observer (value) {
 Observer.prototype.walk = function walk (obj) {
   var keys = Object.keys(obj);
   for (var i = 0; i < keys.length; i++) {
-    defineReactive$$1(obj, keys[i], obj[keys[i]]);
+    defineReactive$$1(obj, keys[i], obj[keys[i]]); // 为每个object属性定义响应式
   }
 };
 
@@ -891,7 +893,7 @@ Observer.prototype.walk = function walk (obj) {
  */
 Observer.prototype.observeArray = function observeArray (items) {
   for (var i = 0, l = items.length; i < l; i++) {
-    observe(items[i]);
+    observe(items[i]);       // 为数组里的每一项进行观察者定义
   }
 };
 
@@ -943,7 +945,7 @@ function observe (value, asRootData) {
   if (asRootData && ob) {
     ob.vmCount++;
   }
-  return ob
+  return ob  // 观察子属性时要返回
 }
 
 /**
@@ -972,7 +974,8 @@ function defineReactive$$1 (
     configurable: true,
     get: function reactiveGetter () {
       var value = getter ? getter.call(obj) : val;
-      if (Dep.target) {
+      console.log(Dep.target);
+      if (Dep.target) {      // 这里为什么要在访问属性的时候进行收集呢？
         dep.depend();
         if (childOb) {
           childOb.dep.depend();
@@ -986,7 +989,7 @@ function defineReactive$$1 (
     set: function reactiveSetter (newVal) {
       var value = getter ? getter.call(obj) : val;
       /* eslint-disable no-self-compare */
-      if (newVal === value || (newVal !== newVal && value !== value)) {
+      if (newVal === value || (newVal !== newVal && value !== value)) {  // 做前后值比较
         return
       }
       /* eslint-enable no-self-compare */
@@ -2854,11 +2857,12 @@ var Watcher = function Watcher (
  * Evaluate the getter, and re-collect dependencies.
  */
 Watcher.prototype.get = function get () {
+  console.log(123);
   pushTarget(this);
   var value;
   var vm = this.vm;
   try {
-    value = this.getter.call(vm, vm);
+    value = this.getter.call(vm, vm);// 这里触发属性的getter
   } catch (e) {
     if (this.user) {
       handleError(e, vm, ("getter for watcher \"" + (this.expression) + "\""));
@@ -2871,6 +2875,7 @@ Watcher.prototype.get = function get () {
     if (this.deep) {
       traverse(value);
     }
+    console.log(234);
     popTarget();
     this.cleanupDeps();
   }

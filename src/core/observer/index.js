@@ -38,17 +38,17 @@ export class Observer {
 
   constructor (value: any) {
     this.value = value
-    this.dep = new Dep()
+    this.dep = new Dep()   // 每个observe 对应一个dep，每个dep 对应多个watcher
     this.vmCount = 0
-    def(value, '__ob__', this)
+    def(value, '__ob__', this)    // 每个被观察的数据都有__ob__属性做标记
     if (Array.isArray(value)) {
-      const augment = hasProto
+      const augment = hasProto    // 是否支持__proto__,根据这个重新定义数组类型的数据的数组操作方法
         ? protoAugment
         : copyAugment
       augment(value, arrayMethods, arrayKeys)
       this.observeArray(value)
     } else {
-      this.walk(value)
+      this.walk(value)      // 如果是一个纯object
     }
   }
 
@@ -60,7 +60,7 @@ export class Observer {
   walk (obj: Object) {
     const keys = Object.keys(obj)
     for (let i = 0; i < keys.length; i++) {
-      defineReactive(obj, keys[i], obj[keys[i]])
+      defineReactive(obj, keys[i], obj[keys[i]])   // 为每个object属性定义响应式
     }
   }
 
@@ -69,7 +69,7 @@ export class Observer {
    */
   observeArray (items: Array<any>) {
     for (let i = 0, l = items.length; i < l; i++) {
-      observe(items[i])
+      observe(items[i])         // 为数组里的每一项进行观察者定义
     }
   }
 }
@@ -122,7 +122,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
   if (asRootData && ob) {
     ob.vmCount++
   }
-  return ob
+  return ob  // 观察子属性时要返回
 }
 
 /**
@@ -151,7 +151,8 @@ export function defineReactive (
     configurable: true,
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
-      if (Dep.target) {
+      console.log(Dep.target)
+      if (Dep.target) {      // 这里为什么要在访问属性的时候进行收集呢？
         dep.depend()
         if (childOb) {
           childOb.dep.depend()
@@ -165,7 +166,7 @@ export function defineReactive (
     set: function reactiveSetter (newVal) {
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */
-      if (newVal === value || (newVal !== newVal && value !== value)) {
+      if (newVal === value || (newVal !== newVal && value !== value)) {  // 做前后值比较
         return
       }
       /* eslint-enable no-self-compare */

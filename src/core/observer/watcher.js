@@ -91,11 +91,12 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
+    console.log(123)
     pushTarget(this)
     let value
     const vm = this.vm
     try {
-      value = this.getter.call(vm, vm)
+      value = this.getter.call(vm, vm)  // 这里触发属性的getter
     } catch (e) {
       if (this.user) {
         handleError(e, vm, `getter for watcher "${this.expression}"`)
@@ -108,6 +109,7 @@ export default class Watcher {
       if (this.deep) {
         traverse(value)
       }
+      console.log(234)
       popTarget()
       this.cleanupDeps()
     }
