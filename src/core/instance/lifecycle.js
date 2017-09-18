@@ -22,7 +22,6 @@ export let isUpdatingChildComponent: boolean = false
 
 export function initLifecycle (vm: Component) {
   const options = vm.$options
-
   // locate first non-abstract parent
   let parent = options.parent
   if (parent && !options.abstract) {

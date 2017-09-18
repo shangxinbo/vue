@@ -104,7 +104,7 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * or the existing observer if the value already has one.
  */
 export function observe (value: any, asRootData: ?boolean): Observer | void {
-  if (!isObject(value)) {
+  if (!isObject(value)) {    // 如果是基础类型值则不作处理，只有object/array才进行观察
     return
   }
   let ob: Observer | void
@@ -135,18 +135,17 @@ export function defineReactive (
   customSetter?: ?Function,
   shallow?: boolean
 ) {
-  const dep = new Dep()
+  const dep = new Dep()  // 定义一个观测对象
 
   const property = Object.getOwnPropertyDescriptor(obj, key)
-  if (property && property.configurable === false) {
+  if (property && property.configurable === false) {   // 属性的
     return
   }
 
   // cater for pre-defined getter/setters
-  const getter = property && property.get
-  const setter = property && property.set
-
-  let childOb = !shallow && observe(val)
+  const getter = property && property.get  // 响应化前的访问器属性get
+  const setter = property && property.set  // 响应化前的访问器属性set
+  let childOb = !shallow && observe(val)   // 递归子属性object／array
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,

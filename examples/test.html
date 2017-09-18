@@ -12,23 +12,22 @@
     </div>
 
     <script>
-        // new Vue(function () {
-        //     this.options = {
-        //         el: '#demo',
-        //         props:[],
-        //         data: {
-        //             newLabel: ''
-        //         }
-        //     }
-        // })
-
+        //let ss = Vue.compile('<div id="demo"><div>{{title}}</div></div>')
+            
         let app = new Vue({
             el: '#demo',
+            props:['asdf'],
             data: {
-                title: 'asdfa'
+                title: 'asdfa',
+                arr:[
+                    1,2,3
+                ]
             },
             created(){
-                console.log(this.$el)
+                //console.log(this.$el)
+            },
+            mounted(){
+                //console.log(this)
             }
         })
     </script>

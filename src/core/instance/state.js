@@ -80,10 +80,10 @@ function initProps (vm: Component, propsOptions: Object) {
   observerState.shouldConvert = isRoot
   for (const key in propsOptions) {
     keys.push(key)
-    const value = validateProp(key, propsOptions, propsData, vm)
+    const value = validateProp(key, propsOptions, propsData, vm)  // 对boollen 类型的props做默认值处理
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
-      if (isReservedAttribute(key) || config.isReservedAttr(key)) {
+      if (isReservedAttribute(key) || config.isReservedAttr(key)) {  // 判断是否是保留字
         warn(
           `"${key}" is a reserved attribute and cannot be used as component prop.`,
           vm
@@ -101,16 +101,16 @@ function initProps (vm: Component, propsOptions: Object) {
         }
       })
     } else {
-      defineReactive(props, key, value)
+      defineReactive(props, key, value)  //  处理成响应值
     }
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
     if (!(key in vm)) {
-      proxy(vm, `_props`, key)
+      proxy(vm, `_props`, key)   // 代理成_props字段
     }
   }
-  observerState.shouldConvert = true
+  observerState.shouldConvert = true  // don't know
 }
 
 function initData (vm: Component) {
@@ -118,7 +118,7 @@ function initData (vm: Component) {
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)
     : data || {}
-  if (!isPlainObject(data)) {
+  if (!isPlainObject(data)) {  // 需要是纯object
     data = {}
     process.env.NODE_ENV !== 'production' && warn(
       'data functions should return an object:\n' +
@@ -134,7 +134,7 @@ function initData (vm: Component) {
   while (i--) {
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
-      if (methods && hasOwn(methods, key)) {
+      if (methods && hasOwn(methods, key)) {   // 是否与methods命名冲突
         warn(
           `method "${key}" has already been defined as a data property.`,
           vm
@@ -142,17 +142,17 @@ function initData (vm: Component) {
       }
     }
     if (props && hasOwn(props, key)) {
-      process.env.NODE_ENV !== 'production' && warn(
+      process.env.NODE_ENV !== 'production' && warn(   // 是否与props命名冲突
         `The data property "${key}" is already declared as a prop. ` +
         `Use prop default value instead.`,
         vm
       )
-    } else if (!isReserved(key)) {
+    } else if (!isReserved(key)) {  // 是否是保留字
       proxy(vm, `_data`, key)
     }
   }
   // observe data
-  observe(data, true /* asRootData */)
+  observe(data, true /* asRootData */)  // 什么时候用 observe 和 defineReactive 如果一个对象能明确是纯object类型就用defineReactive不是就只能用observe
 }
 
 function getData (data: Function, vm: Component): any {
@@ -167,12 +167,12 @@ function getData (data: Function, vm: Component): any {
 const computedWatcherOptions = { lazy: true }
 
 function initComputed (vm: Component, computed: Object) {
-  process.env.NODE_ENV !== 'production' && checkOptionType(vm, 'computed')
+  process.env.NODE_ENV !== 'production' && checkOptionType(vm, 'computed')  // checkOptionType 检查是否是个纯对象，如果不是会给出警告
   const watchers = vm._computedWatchers = Object.create(null)
 
   for (const key in computed) {
     const userDef = computed[key]
-    const getter = typeof userDef === 'function' ? userDef : userDef.get
+    const getter = typeof userDef === 'function' ? userDef : userDef.get   // computed 可以设置get&set也可以直接设置function作为get
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       warn(
         `Getter is missing for computed property "${key}".`,
@@ -185,7 +185,7 @@ function initComputed (vm: Component, computed: Object) {
     // component-defined computed properties are already defined on the
     // component prototype. We only need to define computed properties defined
     // at instantiation here.
-    if (!(key in vm)) {
+    if (!(key in vm)) {     // 计算属性在组件原型上已经定义了
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
       if (key in vm.$data) {

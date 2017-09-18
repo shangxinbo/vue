@@ -579,7 +579,6 @@ function handleError (err, vm, info) {
 /*  */
 /* globals MutationObserver */
 
-// can we use __proto__?
 var hasProto = '__proto__' in {};
 
 // Browser environment sniffing
@@ -592,7 +591,7 @@ var isAndroid = UA && UA.indexOf('android') > 0;
 var isIOS = UA && /iphone|ipad|ipod|ios/.test(UA);
 var isChrome = UA && /chrome\/\d+/.test(UA) && !isEdge;
 
-// Firefix has a "watch" function on Object.prototype...
+// Firefox has a "watch" function on Object.prototype...
 var nativeWatch = ({}).watch;
 
 var supportsPassive = false;
@@ -785,9 +784,6 @@ Dep.prototype.notify = function notify () {
   }
 };
 
-// the current target watcher being evaluated.
-// this is globally unique because there could be only one
-// watcher being evaluated at any time.
 Dep.target = null;
 var targetStack = [];
 
@@ -822,6 +818,7 @@ var arrayMethods = Object.create(arrayProto);[
     var args = [], len = arguments.length;
     while ( len-- ) args[ len ] = arguments[ len ];
 
+    console.log(123);
     var result = original.apply(this, args);
     var ob = this.__ob__;
     var inserted;
@@ -928,7 +925,7 @@ function copyAugment (target, src, keys) {
  * or the existing observer if the value already has one.
  */
 function observe (value, asRootData) {
-  if (!isObject(value)) {
+  if (!isObject(value)) {    // 如果是基础类型值则不作处理，只有object/array才进行观察
     return
   }
   var ob;
@@ -959,18 +956,17 @@ function defineReactive$$1 (
   customSetter,
   shallow
 ) {
-  var dep = new Dep();
+  var dep = new Dep();  // 定义一个观测对象
 
   var property = Object.getOwnPropertyDescriptor(obj, key);
-  if (property && property.configurable === false) {
+  if (property && property.configurable === false) {   // 属性的
     return
   }
 
   // cater for pre-defined getter/setters
-  var getter = property && property.get;
-  var setter = property && property.set;
-
-  var childOb = !shallow && observe(val);
+  var getter = property && property.get;  // 响应化前的访问器属性get
+  var setter = property && property.set;  // 响应化前的访问器属性set
+  var childOb = !shallow && observe(val);   // 递归子属性object／array
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,
@@ -1082,11 +1078,6 @@ function dependArray (value) {
 
 /*  */
 
-/**
- * Option overwriting strategies are functions that handle
- * how to merge a parent option value and a child option
- * value into the final value.
- */
 var strats = config.optionMergeStrategies;
 
 /**
@@ -1443,19 +1434,19 @@ function validateProp (
   propsData,
   vm
 ) {
-  var prop = propOptions[key];
+  var prop = propOptions[key];   // 这里是统一之后的props 是对象格式 {name:{type:String}}
   var absent = !hasOwn(propsData, key);
   var value = propsData[key];
   // handle boolean props
-  if (isType(Boolean, prop.type)) {
-    if (absent && !hasOwn(prop, 'default')) {
+  if (isType(Boolean, prop.type)) {   // 这里的type 是统一后的props格式，每个prop是一个对象，这个对象里的type属性
+    if (absent && !hasOwn(prop, 'default')) {   // 如果props 里的值是一个bollen类型且没有在propsData里定义，且没有设置default值就设置成false
       value = false;
-    } else if (!isType(String, prop.type) && (value === '' || value === hyphenate(key))) {
+    } else if (!isType(String, prop.type) && (value === '' || value === hyphenate(key))) {  // 当设置props是boollen类型时，值为空字符串或者时设置成true
       value = true;
     }
   }
   // check default value
-  if (value === undefined) {
+  if (value === undefined) {   // propsData 是为了方便测试，这里是undefined
     value = getPropDefaultValue(vm, prop, key);
     // since the default value is a fresh copy,
     // make sure to observe it.
@@ -1961,18 +1952,6 @@ function checkProp (
 
 /*  */
 
-// The template compiler attempts to minimize the need for normalization by
-// statically analyzing the template at compile time.
-//
-// For plain HTML markup, normalization can be completely skipped because the
-// generated render function is guaranteed to return Array<VNode>. There are
-// two cases where extra normalization is needed:
-
-// 1. When the children contains components - because a functional component
-// may return an Array instead of a single root. In this case, just a simple
-// normalization is needed - if any child is an Array, we flatten the whole
-// thing with Array.prototype.concat. It is guaranteed to be only 1-level deep
-// because functional components already normalize their own children.
 function simpleNormalizeChildren (children) {
   for (var i = 0; i < children.length; i++) {
     if (Array.isArray(children[i])) {
@@ -2376,7 +2355,6 @@ var isUpdatingChildComponent = false;
 
 function initLifecycle (vm) {
   var options = vm.$options;
-
   // locate first non-abstract parent
   var parent = options.parent;
   if (parent && !options.abstract) {
@@ -3024,11 +3002,6 @@ Watcher.prototype.teardown = function teardown () {
   }
 };
 
-/**
- * Recursively traverse an object to evoke all converted
- * getters, so that every nested property inside the object
- * is collected as a "deep" dependency.
- */
 var seenObjects = new _Set();
 function traverse (val) {
   seenObjects.clear();
@@ -3114,10 +3087,10 @@ function initProps (vm, propsOptions) {
   observerState.shouldConvert = isRoot;
   var loop = function ( key ) {
     keys.push(key);
-    var value = validateProp(key, propsOptions, propsData, vm);
+    var value = validateProp(key, propsOptions, propsData, vm);  // 对boollen 类型的props做默认值处理
     /* istanbul ignore else */
     {
-      if (isReservedAttribute(key) || config.isReservedAttr(key)) {
+      if (isReservedAttribute(key) || config.isReservedAttr(key)) {  // 判断是否是保留字
         warn(
           ("\"" + key + "\" is a reserved attribute and cannot be used as component prop."),
           vm
@@ -3139,12 +3112,12 @@ function initProps (vm, propsOptions) {
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
     if (!(key in vm)) {
-      proxy(vm, "_props", key);
+      proxy(vm, "_props", key);   // 代理成_props字段
     }
   };
 
   for (var key in propsOptions) loop( key );
-  observerState.shouldConvert = true;
+  observerState.shouldConvert = true;  // don't know
 }
 
 function initData (vm) {
@@ -3152,7 +3125,7 @@ function initData (vm) {
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)
     : data || {};
-  if (!isPlainObject(data)) {
+  if (!isPlainObject(data)) {  // 需要是纯object
     data = {};
     "development" !== 'production' && warn(
       'data functions should return an object:\n' +
@@ -3168,7 +3141,7 @@ function initData (vm) {
   while (i--) {
     var key = keys[i];
     {
-      if (methods && hasOwn(methods, key)) {
+      if (methods && hasOwn(methods, key)) {   // 是否与methods命名冲突
         warn(
           ("method \"" + key + "\" has already been defined as a data property."),
           vm
@@ -3176,17 +3149,17 @@ function initData (vm) {
       }
     }
     if (props && hasOwn(props, key)) {
-      "development" !== 'production' && warn(
+      "development" !== 'production' && warn(   // 是否与props命名冲突
         "The data property \"" + key + "\" is already declared as a prop. " +
         "Use prop default value instead.",
         vm
       );
-    } else if (!isReserved(key)) {
+    } else if (!isReserved(key)) {  // 是否是保留字
       proxy(vm, "_data", key);
     }
   }
   // observe data
-  observe(data, true /* asRootData */);
+  observe(data, true /* asRootData */);  // 什么时候用 observe 和 defineReactive 如果一个对象能明确是纯object类型就用defineReactive不是就只能用observe
 }
 
 function getData (data, vm) {
@@ -3201,12 +3174,12 @@ function getData (data, vm) {
 var computedWatcherOptions = { lazy: true };
 
 function initComputed (vm, computed) {
-  "development" !== 'production' && checkOptionType(vm, 'computed');
+  "development" !== 'production' && checkOptionType(vm, 'computed');  // checkOptionType 检查是否是个纯对象，如果不是会给出警告
   var watchers = vm._computedWatchers = Object.create(null);
 
   for (var key in computed) {
     var userDef = computed[key];
-    var getter = typeof userDef === 'function' ? userDef : userDef.get;
+    var getter = typeof userDef === 'function' ? userDef : userDef.get;   // computed 可以设置get&set也可以直接设置function作为get
     if ("development" !== 'production' && getter == null) {
       warn(
         ("Getter is missing for computed property \"" + key + "\"."),
@@ -3219,7 +3192,7 @@ function initComputed (vm, computed) {
     // component-defined computed properties are already defined on the
     // component prototype. We only need to define computed properties defined
     // at instantiation here.
-    if (!(key in vm)) {
+    if (!(key in vm)) {     // 计算属性在组件原型上已经定义了
       defineComputed(vm, key, userDef);
     } else {
       if (key in vm.$data) {
@@ -3481,7 +3454,6 @@ function mergeProps (to, from) {
 
 /*  */
 
-// hooks to be invoked on component VNodes during patch
 var componentVNodeHooks = {
   init: function init (
     vnode,
@@ -3832,9 +3804,6 @@ function applyNS (vnode, ns) {
 
 /*  */
 
-/**
- * Runtime helper for rendering v-for lists.
- */
 function renderList (
   val,
   render
@@ -3866,9 +3835,6 @@ function renderList (
 
 /*  */
 
-/**
- * Runtime helper for rendering <slot>
- */
 function renderSlot (
   name,
   fallback,
@@ -3899,18 +3865,12 @@ function renderSlot (
 
 /*  */
 
-/**
- * Runtime helper for resolving filters
- */
 function resolveFilter (id) {
   return resolveAsset(this.$options, 'filters', id, true) || identity
 }
 
 /*  */
 
-/**
- * Runtime helper for checking keyCodes from config.
- */
 function checkKeyCodes (
   eventKeyCode,
   key,
@@ -3926,9 +3886,6 @@ function checkKeyCodes (
 
 /*  */
 
-/**
- * Runtime helper for merging v-bind="object" into a VNode's data.
- */
 function bindObjectProps (
   data,
   tag,
@@ -3980,9 +3937,6 @@ function bindObjectProps (
 
 /*  */
 
-/**
- * Runtime helper for rendering static trees.
- */
 function renderStatic (
   index,
   isInFor
@@ -4650,8 +4604,6 @@ Vue$3.version = '2.4.2';
 
 /*  */
 
-// these are reserved for web because they are directly compiled away
-// during template compilation
 var isReservedAttr = makeMap('style,class');
 
 // attributes that should be using props for binding
@@ -4846,9 +4798,6 @@ function isUnknownElement (tag) {
 
 /*  */
 
-/**
- * Query an element selector if it's not an element already.
- */
 function query (el) {
   if (typeof el === 'string') {
     var selected = document.querySelector(el);
@@ -6381,10 +6330,6 @@ function genDefaultModel (
 
 /*  */
 
-// normalize v-model event tokens that can only be determined at runtime.
-// it's important to place the event as the first in the array because
-// the whole point is ensuring the v-model callback gets called before
-// user-attached handlers.
 function normalizeEvents (on) {
   var event;
   /* istanbul ignore if */
@@ -7269,8 +7214,6 @@ var platformModules = [
 
 /*  */
 
-// the directive module should be applied last, after all
-// built-in modules have been applied.
 var modules = platformModules.concat(baseModules);
 
 var patch = createPatchFunction({ nodeOps: nodeOps, modules: modules });
@@ -7398,7 +7341,6 @@ function trigger (el, type) {
 
 /*  */
 
-// recursively search for possible transition defined inside the component root
 function locateNode (vnode) {
   return vnode.componentInstance && (!vnode.data || !vnode.data.transition)
     ? locateNode(vnode.componentInstance._vnode)
@@ -7831,7 +7773,6 @@ var platformComponents = {
 
 /*  */
 
-// install platform specific utils
 Vue$3.config.mustUseProp = mustUseProp;
 Vue$3.config.isReservedTag = isReservedTag;
 Vue$3.config.isReservedAttr = isReservedAttr;
@@ -7881,7 +7822,6 @@ setTimeout(function () {
 
 /*  */
 
-// check whether current browser encodes a char inside attribute values
 function shouldDecode (content, encoded) {
   var div = document.createElement('div');
   div.innerHTML = "<div a=\"" + content + "\"/>";
@@ -8105,7 +8045,6 @@ var he = {
  * http://erik.eae.net/simplehtmlparser/simplehtmlparser.js
  */
 
-// Regular Expressions for parsing tags and attributes
 var singleAttrIdentifier = /([^\s"'<>/=]+)/;
 var singleAttrAssign = /(?:=)/;
 var singleAttrValues = [
@@ -9716,8 +9655,6 @@ function transformSpecialNewlines (text) {
 
 /*  */
 
-// these keywords should not appear inside expressions, but operators like
-// typeof, instanceof and in are allowed
 var prohibitedKeywordRE = new RegExp('\\b' + (
   'do,if,for,let,new,try,var,case,else,with,await,break,catch,class,const,' +
   'super,throw,while,yield,delete,export,import,return,switch,default,' +
@@ -9960,9 +9897,6 @@ function createCompilerCreator (baseCompile) {
 
 /*  */
 
-// `createCompilerCreator` allows creating compilers that use alternative
-// parser/optimizer/codegen, e.g the SSR optimizing compiler.
-// Here we just export a default compiler using the default parts.
 var createCompiler = createCompilerCreator(function baseCompile (
   template,
   options

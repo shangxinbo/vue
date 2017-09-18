@@ -23,19 +23,19 @@ export function validateProp (
   propsData: Object,
   vm?: Component
 ): any {
-  const prop = propOptions[key]
+  const prop = propOptions[key]   // 这里是统一之后的props 是对象格式 {name:{type:String}}
   const absent = !hasOwn(propsData, key)
   let value = propsData[key]
   // handle boolean props
-  if (isType(Boolean, prop.type)) {
-    if (absent && !hasOwn(prop, 'default')) {
+  if (isType(Boolean, prop.type)) {   // 这里的type 是统一后的props格式，每个prop是一个对象，这个对象里的type属性
+    if (absent && !hasOwn(prop, 'default')) {   // 如果props 里的值是一个bollen类型且没有在propsData里定义，且没有设置default值就设置成false
       value = false
-    } else if (!isType(String, prop.type) && (value === '' || value === hyphenate(key))) {
+    } else if (!isType(String, prop.type) && (value === '' || value === hyphenate(key))) {  // 当设置props是boollen类型时，值为空字符串或者时设置成true
       value = true
     }
   }
   // check default value
-  if (value === undefined) {
+  if (value === undefined) {   // propsData 是为了方便测试，这里是undefined
     value = getPropDefaultValue(vm, prop, key)
     // since the default value is a fresh copy,
     // make sure to observe it.
