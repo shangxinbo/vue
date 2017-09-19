@@ -4,7 +4,7 @@ import { namespaceMap } from 'web/util/index'
 
 export function createElement (tagName: string, vnode: VNode): Element {
   const elm = document.createElement(tagName)
-  if (tagName !== 'select') {
+  if (tagName !== 'select') {  // 为何把select标签去掉
     return elm
   }
   // false or null will remove the attribute but undefined will not

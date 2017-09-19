@@ -790,12 +790,10 @@ var targetStack = [];
 function pushTarget (_target) {
   if (Dep.target) { targetStack.push(Dep.target); }
   Dep.target = _target;
-  console.log(Dep.target);
 }
 
 function popTarget () {
   Dep.target = targetStack.pop();
-  console.log(Dep.target);
 }
 
 /*
@@ -820,7 +818,6 @@ var arrayMethods = Object.create(arrayProto);[
     var args = [], len = arguments.length;
     while ( len-- ) args[ len ] = arguments[ len ];
 
-    console.log(123);
     var result = original.apply(this, args);
     var ob = this.__ob__;
     var inserted;
@@ -974,7 +971,6 @@ function defineReactive$$1 (
     configurable: true,
     get: function reactiveGetter () {
       var value = getter ? getter.call(obj) : val;
-      console.log(Dep.target);
       if (Dep.target) {      // 这里为什么要在访问属性的时候进行收集呢？,在初始化时进行依赖收集，如果有就是在初始化过程，如果没有则是普通的数据读取
         dep.depend();
         if (childOb) {
@@ -2387,26 +2383,26 @@ function lifecycleMixin (Vue) {
     if (vm._isMounted) {
       callHook(vm, 'beforeUpdate');
     }
-    var prevEl = vm.$el;
-    var prevVnode = vm._vnode;
+    var prevEl = vm.$el;  // 挂载前的元素
+    var prevVnode = vm._vnode;   // 原来的vnode
     var prevActiveInstance = activeInstance;
     activeInstance = vm;
-    vm._vnode = vnode;
+    vm._vnode = vnode;   // 设置新的vnode
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
     if (!prevVnode) {
       // initial render
-      vm.$el = vm.__patch__(
+      vm.$el = vm.__patch__(   // 初次匹配vnode 和dom
         vm.$el, vnode, hydrating, false /* removeOnly */,
-        vm.$options._parentElm,
-        vm.$options._refElm
+        vm.$options._parentElm,    // undefined init
+        vm.$options._refElm        // undefined init
       );
       // no need for the ref nodes after initial patch
       // this prevents keeping a detached DOM tree in memory (#5851)
       vm.$options._parentElm = vm.$options._refElm = null;
     } else {
       // updates
-      vm.$el = vm.__patch__(prevVnode, vnode);
+      vm.$el = vm.__patch__(prevVnode, vnode);   // update vnode
     }
     activeInstance = prevActiveInstance;
     // update __vue__ reference
@@ -2477,8 +2473,9 @@ function mountComponent (
   hydrating
 ) {
   vm.$el = el;
-  if (!vm.$options.render) {
-    vm.$options.render = createEmptyVNode;
+  // 处理渲染函数
+  if (!vm.$options.render) {   // vue允许自定义render函数，这样可以李荣js的完全编程能力
+    vm.$options.render = createEmptyVNode;   // 默认渲染函数
     {
       /* istanbul ignore if */
       if ((vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
@@ -2491,7 +2488,7 @@ function mountComponent (
         );
       } else {
         warn(
-          'Failed to mount component: template or render function not defined.',
+          'Failed to mount component: template or render function not defined.',   // render 和template不能全没有
           vm
         );
       }
@@ -2520,18 +2517,19 @@ function mountComponent (
     };
   } else {
     updateComponent = function () {
-      vm._update(vm._render(), hydrating);
+      vm._update(vm._render(), hydrating);  // vm._render()得到vnode,update是diff vnode && 更新dom
     };
   }
 
+  // updateComponent 是执行update,那每次更新数据时也会执行update来更新模板
   vm._watcher = new Watcher(vm, updateComponent, noop);
   hydrating = false;
 
   // manually mounted instance, call mounted on self
   // mounted is called for render-created child components in its inserted hook
   if (vm.$vnode == null) {
-    vm._isMounted = true;
-    callHook(vm, 'mounted');
+    vm._isMounted = true;   // 挂载完毕
+    callHook(vm, 'mounted');  // 初次挂载触发挂载完成事件
   }
   return vm
 }
@@ -2857,7 +2855,6 @@ var Watcher = function Watcher (
  * Evaluate the getter, and re-collect dependencies.
  */
 Watcher.prototype.get = function get () {
-  console.log(123);
   pushTarget(this);
   var value;
   var vm = this.vm;
@@ -2875,7 +2872,6 @@ Watcher.prototype.get = function get () {
     if (this.deep) {
       traverse(value);
     }
-    console.log(234);
     popTarget();
     this.cleanupDeps();
   }
@@ -4822,7 +4818,7 @@ function query (el) {
 
 function createElement$1 (tagName, vnode) {
   var elm = document.createElement(tagName);
-  if (tagName !== 'select') {
+  if (tagName !== 'select') {  // 为何把select标签去掉
     return elm
   }
   // false or null will remove the attribute but undefined will not
@@ -4998,16 +4994,34 @@ function createPatchFunction (backend) {
   var modules = backend.modules;
   var nodeOps = backend.nodeOps;
 
+/*
+moudles like
+[{create,update,desctory,remove,activate}]
+nodeOps like
+{
+    createElement:function,
+    createElementNS:function,
+    createTextNode:function,
+    createComment:function,
+    insertBefore:function,
+    nextSibling:function,
+    parentNode:function,
+    removeChild:function,
+    setAttribute:function
+    ……
+}
+*/
   for (i = 0; i < hooks.length; ++i) {
     cbs[hooks[i]] = [];
     for (j = 0; j < modules.length; ++j) {
       if (isDef(modules[j][hooks[i]])) {
-        cbs[hooks[i]].push(modules[j][hooks[i]]);
+        cbs[hooks[i]].push(modules[j][hooks[i]]);  // 钩子函数
       }
     }
   }
 
   function emptyNodeAt (elm) {
+    // tag,data,children,text,elm
     return new VNode(nodeOps.tagName(elm).toLowerCase(), {}, [], undefined, elm)
   }
 
@@ -5032,6 +5046,7 @@ function createPatchFunction (backend) {
   var inPre = 0;
   function createElm (vnode, insertedVnodeQueue, parentElm, refElm, nested) {
     vnode.isRootInsert = !nested; // for transition enter check
+    // 在vnode.data存在且vnode.componentInstance也存在的时候会返回true
     if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
       return
     }
@@ -5058,7 +5073,7 @@ function createPatchFunction (backend) {
           );
         }
       }
-      vnode.elm = vnode.ns
+      vnode.elm = vnode.ns  // 是否支持document.createElementNS
         ? nodeOps.createElementNS(vnode.ns, tag)
         : nodeOps.createElement(tag, vnode);
       setScope(vnode);
@@ -5069,7 +5084,7 @@ function createPatchFunction (backend) {
         if (isDef(data)) {
           invokeCreateHooks(vnode, insertedVnodeQueue);
         }
-        insert(parentElm, vnode.elm, refElm);
+        insert(parentElm, vnode.elm, refElm); // dom插入
       }
 
       if ("development" !== 'production' && data && data.pre) {
@@ -5077,18 +5092,18 @@ function createPatchFunction (backend) {
       }
     } else if (isTrue(vnode.isComment)) {
       vnode.elm = nodeOps.createComment(vnode.text);
-      insert(parentElm, vnode.elm, refElm);
+      insert(parentElm, vnode.elm, refElm);   // dom插入
     } else {
       vnode.elm = nodeOps.createTextNode(vnode.text);
-      insert(parentElm, vnode.elm, refElm);
+      insert(parentElm, vnode.elm, refElm);   // dom插入
     }
   }
 
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     var i = vnode.data;
-    if (isDef(i)) {
+    if (isDef(i)) {   // 什么情况下vnode没有data呢？
       var isReactivated = isDef(vnode.componentInstance) && i.keepAlive;
-      if (isDef(i = i.hook) && isDef(i = i.init)) {
+      if (isDef(i = i.hook) && isDef(i = i.init)) { // 使用vnode.data.hook.init初始化
         i(vnode, false /* hydrating */, parentElm, refElm);
       }
       // after calling the init hook, if the vnode is a child component
@@ -5145,14 +5160,14 @@ function createPatchFunction (backend) {
     insert(parentElm, vnode.elm, refElm);
   }
 
-  function insert (parent, elm, ref$$1) {
+  function insert (parent, elm, ref$$1) {   // document.insertBefore
     if (isDef(parent)) {
       if (isDef(ref$$1)) {
         if (ref$$1.parentNode === parent) {
           nodeOps.insertBefore(parent, elm, ref$$1);
         }
       } else {
-        nodeOps.appendChild(parent, elm);
+        nodeOps.appendChild(parent, elm);  // document.appendChild
       }
     }
   }
@@ -5502,24 +5517,23 @@ function createPatchFunction (backend) {
 
   return function patch (oldVnode, vnode, hydrating, removeOnly, parentElm, refElm) {
     if (isUndef(vnode)) {
-      if (isDef(oldVnode)) { invokeDestroyHook(oldVnode); }
+      if (isDef(oldVnode)) { invokeDestroyHook(oldVnode); }  // 如果vnode不存在，但oldVnode存在，说明意图是销毁老节点
       return
     }
-
     var isInitialPatch = false;
     var insertedVnodeQueue = [];
 
-    if (isUndef(oldVnode)) {
+    if (isUndef(oldVnode)) {   // 如果vnode存在但oldVnode不存在说明是要创建新节点，那就调用createElm创建新节点
       // empty mount (likely as component), create new root element
       isInitialPatch = true;
       createElm(vnode, insertedVnodeQueue, parentElm, refElm);
-    } else {
-      var isRealElement = isDef(oldVnode.nodeType);
-      if (!isRealElement && sameVnode(oldVnode, vnode)) {
+    } else {                   // 如果vnode合oldVnode都存在
+      var isRealElement = isDef(oldVnode.nodeType);        // nodeType 是原生dom的属性，节点类型，如果存在说明是真实dom而不是vnode
+      if (!isRealElement && sameVnode(oldVnode, vnode)) {   // 如果先后是同一个节点，两个是相同的vnode
         // patch existing root node
         patchVnode(oldVnode, vnode, insertedVnodeQueue, removeOnly);
-      } else {
-        if (isRealElement) {
+      } else {                                              // 如果不是同一个节点
+        if (isRealElement) {                                // 原来的是dom
           // mounting to a real element
           // check if this is server-rendered content and if we can perform
           // a successful hydration.
@@ -5543,11 +5557,11 @@ function createPatchFunction (backend) {
           }
           // either not server-rendered, or hydration failed.
           // create an empty node and replace it
-          oldVnode = emptyNodeAt(oldVnode);
+          oldVnode = emptyNodeAt(oldVnode);   // 如果oldVnode是个真实的dom,将其转化成vnode
         }
         // replacing existing element
         var oldElm = oldVnode.elm;
-        var parentElm$1 = nodeOps.parentNode(oldElm);
+        var parentElm$1 = nodeOps.parentNode(oldElm);  // nodeOps是封装的一系列dom操作的函数库
         createElm(
           vnode,
           insertedVnodeQueue,
@@ -7220,7 +7234,23 @@ var platformModules = [
 /*  */
 
 var modules = platformModules.concat(baseModules);
-
+/*
+moudles like
+[{create,update,desctory,remove,activate}]
+nodeOps like
+{
+    createElement:function,
+    createElementNS:function,
+    createTextNode:function,
+    createComment:function,
+    insertBefore:function,
+    nextSibling:function,
+    parentNode:function,
+    removeChild:function,
+    setAttribute:function
+    ……
+}
+*/
 var patch = createPatchFunction({ nodeOps: nodeOps, modules: modules });
 
 /**
@@ -9850,6 +9880,7 @@ function createCompileToFunctionFn (compile) {
 
 /*  */
 
+// 闭包
 function createCompilerCreator (baseCompile) {
   return function createCompiler (baseOptions) {
     function compile (
@@ -9936,7 +9967,7 @@ Vue$3.prototype.$mount = function (
   el = el && query(el);
 
   /* istanbul ignore if */
-  if (el === document.body || el === document.documentElement) {
+  if (el === document.body || el === document.documentElement) { // 不能挂载在body，html上
     "development" !== 'production' && warn(
       "Do not mount Vue to <html> or <body> - mount to normal elements instead."
     );
@@ -9945,30 +9976,30 @@ Vue$3.prototype.$mount = function (
 
   var options = this.$options;
   // resolve template/el and convert to render function
-  if (!options.render) {
+  if (!options.render) {   // 如果没有自定义render函数，则解析模板成为render函数，如果存在render选项则忽略template选项
     var template = options.template;
     if (template) {
-      if (typeof template === 'string') {
+      if (typeof template === 'string') {  // 通过id来选择模板
         if (template.charAt(0) === '#') {
           template = idToTemplate(template);
           /* istanbul ignore if */
-          if ("development" !== 'production' && !template) {
+          if ("development" !== 'production' && !template) {  // 警告转换后的template选项不能在没有render的情况下为空
             warn(
-              ("Template element not found or is empty: " + (options.template)),
+              ("Template element not found or is empty: " + (options.template)),   
               this
             );
           }
         }
-      } else if (template.nodeType) {
-        template = template.innerHTML;
+      } else if (template.nodeType) {   // 是真实的dom元素
+        template = template.innerHTML;   // 模板是template内的元素
       } else {
         {
-          warn('invalid template option:' + template, this);
+          warn('invalid template option:' + template, this);   // 如果不是#id或是真实的dom元素的话是非法的template选项
         }
         return this
       }
     } else if (el) {
-      template = getOuterHTML(el);
+      template = getOuterHTML(el);  // template选项没有时获取元素的outerHtml作为模板
     }
     if (template) {
       /* istanbul ignore if */
@@ -9976,6 +10007,7 @@ Vue$3.prototype.$mount = function (
         mark('compile');
       }
 
+      // 生成render函数，**核心**
       var ref = compileToFunctions(template, {
         shouldDecodeNewlines: shouldDecodeNewlines,
         delimiters: options.delimiters,
@@ -9993,6 +10025,7 @@ Vue$3.prototype.$mount = function (
       }
     }
   }
+  // 如果有自定义的render函数直接挂载，不用解析模板
   return mount.call(this, el, hydrating)
 };
 

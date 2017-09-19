@@ -51,26 +51,26 @@ export function lifecycleMixin (Vue: Class<Component>) {
     if (vm._isMounted) {
       callHook(vm, 'beforeUpdate')
     }
-    const prevEl = vm.$el
-    const prevVnode = vm._vnode
+    const prevEl = vm.$el  // 挂载前的元素
+    const prevVnode = vm._vnode   // 原来的vnode
     const prevActiveInstance = activeInstance
     activeInstance = vm
-    vm._vnode = vnode
+    vm._vnode = vnode   // 设置新的vnode
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
     if (!prevVnode) {
       // initial render
-      vm.$el = vm.__patch__(
+      vm.$el = vm.__patch__(   // 初次匹配vnode 和dom
         vm.$el, vnode, hydrating, false /* removeOnly */,
-        vm.$options._parentElm,
-        vm.$options._refElm
+        vm.$options._parentElm,    // undefined init
+        vm.$options._refElm        // undefined init
       )
       // no need for the ref nodes after initial patch
       // this prevents keeping a detached DOM tree in memory (#5851)
       vm.$options._parentElm = vm.$options._refElm = null
     } else {
       // updates
-      vm.$el = vm.__patch__(prevVnode, vnode)
+      vm.$el = vm.__patch__(prevVnode, vnode)   // update vnode
     }
     activeInstance = prevActiveInstance
     // update __vue__ reference
@@ -141,8 +141,9 @@ export function mountComponent (
   hydrating?: boolean
 ): Component {
   vm.$el = el
-  if (!vm.$options.render) {
-    vm.$options.render = createEmptyVNode
+  // 处理渲染函数
+  if (!vm.$options.render) {   // vue允许自定义render函数，这样可以李荣js的完全编程能力
+    vm.$options.render = createEmptyVNode   // 默认渲染函数
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
       if ((vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
@@ -155,7 +156,7 @@ export function mountComponent (
         )
       } else {
         warn(
-          'Failed to mount component: template or render function not defined.',
+          'Failed to mount component: template or render function not defined.',   // render 和template不能全没有
           vm
         )
       }
@@ -184,18 +185,19 @@ export function mountComponent (
     }
   } else {
     updateComponent = () => {
-      vm._update(vm._render(), hydrating)
+      vm._update(vm._render(), hydrating)  // vm._render()得到vnode,update是diff vnode && 更新dom
     }
   }
 
+  // updateComponent 是执行update,那每次更新数据时也会执行update来更新模板
   vm._watcher = new Watcher(vm, updateComponent, noop)
   hydrating = false
 
   // manually mounted instance, call mounted on self
   // mounted is called for render-created child components in its inserted hook
   if (vm.$vnode == null) {
-    vm._isMounted = true
-    callHook(vm, 'mounted')
+    vm._isMounted = true   // 挂载完毕
+    callHook(vm, 'mounted')  // 初次挂载触发挂载完成事件
   }
   return vm
 }

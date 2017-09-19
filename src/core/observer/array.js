@@ -24,7 +24,6 @@ export const arrayMethods = Object.create(arrayProto)
   // cache original method
   const original = arrayProto[method]
   def(arrayMethods, method, function mutator (...args) {
-    console.log(123)
     const result = original.apply(this, args)
     const ob = this.__ob__
     let inserted

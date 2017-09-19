@@ -91,7 +91,6 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
-    console.log(123)
     pushTarget(this)
     let value
     const vm = this.vm
@@ -109,7 +108,6 @@ export default class Watcher {
       if (this.deep) {
         traverse(value)
       }
-      console.log(234)
       popTarget()
       this.cleanupDeps()
     }
