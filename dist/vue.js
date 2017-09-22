@@ -5562,7 +5562,7 @@ nodeOps like
         // replacing existing element
         var oldElm = oldVnode.elm;
         var parentElm$1 = nodeOps.parentNode(oldElm);  // nodeOps是封装的一系列dom操作的函数库
-        createElm(
+        createElm(    // 这个是将vnode转换城dom的函数
           vnode,
           insertedVnodeQueue,
           // extremely rare edge case: do not insert if old element is in a
@@ -9880,7 +9880,6 @@ function createCompileToFunctionFn (compile) {
 
 /*  */
 
-// 闭包
 function createCompilerCreator (baseCompile) {
   return function createCompiler (baseOptions) {
     function compile (
@@ -9985,7 +9984,7 @@ Vue$3.prototype.$mount = function (
           /* istanbul ignore if */
           if ("development" !== 'production' && !template) {  // 警告转换后的template选项不能在没有render的情况下为空
             warn(
-              ("Template element not found or is empty: " + (options.template)),   
+              ("Template element not found or is empty: " + (options.template)),
               this
             );
           }

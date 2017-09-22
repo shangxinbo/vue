@@ -658,7 +658,7 @@ nodeOps like
         // replacing existing element
         const oldElm = oldVnode.elm
         const parentElm = nodeOps.parentNode(oldElm)  // nodeOps是封装的一系列dom操作的函数库
-        createElm(
+        createElm(    // 这个是将vnode转换城dom的函数
           vnode,
           insertedVnodeQueue,
           // extremely rare edge case: do not insert if old element is in a

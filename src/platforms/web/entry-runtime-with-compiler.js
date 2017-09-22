@@ -40,7 +40,7 @@ Vue.prototype.$mount = function (
           /* istanbul ignore if */
           if (process.env.NODE_ENV !== 'production' && !template) {  // 警告转换后的template选项不能在没有render的情况下为空
             warn(
-              `Template element not found or is empty: ${options.template}`,   
+              `Template element not found or is empty: ${options.template}`,
               this
             )
           }
