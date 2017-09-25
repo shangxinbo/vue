@@ -19,14 +19,14 @@ import {
   pluckModuleFunction
 } from '../helpers'
 
-export const onRE = /^@|^v-on:/
-export const dirRE = /^v-|^@|^:/
-export const forAliasRE = /(.*?)\s+(?:in|of)\s+(.*)/
-export const forIteratorRE = /\((\{[^}]*\}|[^,]*),([^,]*)(?:,([^,]*))?\)/
+export const onRE = /^@|^v-on:/   // 匹配@或v-on 开头的属性，就是我们添加事件的语法
+export const dirRE = /^v-|^@|^:/  // 匹配 v- 或 @ 或 ： 开头的属性，即vue中的绑定数据活事件的语法
+export const forAliasRE = /(.*?)\s+(?:in|of)\s+(.*)/   // 匹配v-for中的属性值，比如item in items, (item,index) in items
+export const forIteratorRE = /\((\{[^}]*\}|[^,]*),([^,]*)(?:,([^,]*))?\)/   // 对forAliasRE 中捕获的第一部分内容，进行拆解，我们都知道v-for中in|of前最后可以有三个逗号分割的参数
 
-const argRE = /:(.*)$/
-const bindRE = /^:|^v-bind:/
-const modifierRE = /\.[^.]+/g
+const argRE = /:(.*)$/   // 捕获 ：开头的属性
+const bindRE = /^:|^v-bind:/  // 匹配v-bind 开头的属性，即绑定数据的语法
+const modifierRE = /\.[^.]+/g  // 匹配事件修饰符，比如@click.stop @keyup.enter等中的修饰符
 
 const decodeHTMLCached = cached(he.decode)
 
@@ -49,15 +49,15 @@ export function parse (
 ): ASTElement | void {
   warn = options.warn || baseWarn
 
-  platformIsPreTag = options.isPreTag || no
-  platformMustUseProp = options.mustUseProp || no
-  platformGetTagNamespace = options.getTagNamespace || no
+  platformIsPreTag = options.isPreTag || no   // 是否是pre标签
+  platformMustUseProp = options.mustUseProp || no  // 判断是否需要通过绑定prop来绑定属性
+  platformGetTagNamespace = options.getTagNamespace || no  // 获取tag的命名空间，svg或math
 
   transforms = pluckModuleFunction(options.modules, 'transformNode')
   preTransforms = pluckModuleFunction(options.modules, 'preTransformNode')
   postTransforms = pluckModuleFunction(options.modules, 'postTransformNode')
 
-  delimiters = options.delimiters
+  delimiters = options.delimiters   // 分割符
 
   const stack = []
   const preserveWhitespace = options.preserveWhitespace !== false
@@ -87,7 +87,7 @@ export function parse (
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
-    isUnaryTag: options.isUnaryTag,
+    isUnaryTag: options.isUnaryTag,  // 是否是单标签
     canBeLeftOpenTag: options.canBeLeftOpenTag,
     shouldDecodeNewlines: options.shouldDecodeNewlines,
     shouldKeepComment: options.comments,

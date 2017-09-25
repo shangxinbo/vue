@@ -13,9 +13,9 @@ import { makeMap, no } from 'shared/util'
 import { isNonPhrasingTag } from 'web/compiler/util'
 
 // Regular Expressions for parsing tags and attributes
-const singleAttrIdentifier = /([^\s"'<>/=]+)/
-const singleAttrAssign = /(?:=)/
-const singleAttrValues = [
+const singleAttrIdentifier = /([^\s"'<>/=]+)/  // 匹配1个活多个空白自符，非"'<>/=字符，并捕获匹配到的内容，主要用于匹配属性名
+const singleAttrAssign = /(?:=)/   // 匹配一个= ,但不捕获
+const singleAttrValues = [         // 匹配属性值，分单引号，双引号和不用引号
   // attr value double quotes
   /"([^"]*)"+/.source,
   // attr value, single quotes
@@ -31,14 +31,14 @@ const attribute = new RegExp(
 
 // could use https://www.w3.org/TR/1999/REC-xml-names-19990114/#NT-QName
 // but for Vue templates we can enforce a simple charset
-const ncname = '[a-zA-Z_][\\w\\-\\.]*'
-const qnameCapture = '((?:' + ncname + '\\:)?' + ncname + ')'
-const startTagOpen = new RegExp('^<' + qnameCapture)
-const startTagClose = /^\s*(\/?)>/
-const endTag = new RegExp('^<\\/' + qnameCapture + '[^>]*>')
-const doctype = /^<!DOCTYPE [^>]+>/i
-const comment = /^<!--/
-const conditionalComment = /^<!\[/
+const ncname = '[a-zA-Z_][\\w\\-\\.]*'   // 匹配字母或下划线开头，0或多个 a-zA-z_ ,- 或 .
+const qnameCapture = '((?:' + ncname + '\\:)?' + ncname + ')'     // 匹配ncname开头，紧跟着一个冒号，然后又跟着一个ncname，捕获整体匹配的内容
+const startTagOpen = new RegExp('^<' + qnameCapture)        // 匹配起始标签，因为可能有命名空间，所以有了qnameCapture
+const startTagClose = /^\s*(\/?)>/                          // 匹配其实标签的结束部分，这里做了单标签的区分
+const endTag = new RegExp('^<\\/' + qnameCapture + '[^>]*>')  // 匹配双标签的结束标签
+const doctype = /^<!DOCTYPE [^>]+>/i                          // 匹配doctype
+const comment = /^<!--/                                       // 匹配注释的起始部分
+const conditionalComment = /^<!\[/                            // 匹配CDATA内容
 
 let IS_REGEX_CAPTURING_BROKEN = false
 'x'.replace(/x(.)?/g, function (m, g) {

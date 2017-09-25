@@ -8046,15 +8046,15 @@ var isNonPhrasingTag = makeMap(
 
 var baseOptions = {
   expectHTML: true,
-  modules: modules$1,
-  directives: directives$1,
-  isPreTag: isPreTag,
-  isUnaryTag: isUnaryTag,
-  mustUseProp: mustUseProp,
-  canBeLeftOpenTag: canBeLeftOpenTag,
-  isReservedTag: isReservedTag,
-  getTagNamespace: getTagNamespace,
-  staticKeys: genStaticKeys(modules$1)
+  modules: modules$1,     // klass, style
+  directives: directives$1,  // model(v-model), html(v-html),text(v-text)
+  isPreTag: isPreTag,    // 是否是pre 标签
+  isUnaryTag: isUnaryTag,  // 是否是单标签 比如img, input
+  mustUseProp: mustUseProp, // 需要使用props 绑定的属性，比如value,selected
+  canBeLeftOpenTag: canBeLeftOpenTag, // 可以不闭合的标签，比如td，tr
+  isReservedTag: isReservedTag,  // 是否是保留标签，html标签和svg标签
+  getTagNamespace: getTagNamespace, // 获取明明空间，svg和math
+  staticKeys: genStaticKeys(modules$1)   // 静态关键词，包括 staticClass,staticStyle
 };
 
 /*  */
@@ -9880,8 +9880,9 @@ function createCompileToFunctionFn (compile) {
 
 /*  */
 
+// 闭包
 function createCompilerCreator (baseCompile) {
-  return function createCompiler (baseOptions) {
+  return function createCompiler (baseOptions) {   // createCompilder 函数体
     function compile (
       template,
       options
