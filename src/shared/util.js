@@ -170,7 +170,7 @@ export const hyphenate = cached((str: string): string => {
  */
 export function bind (fn: Function, ctx: Object): Function {
   function boundFn (a) {
-    const l: number = arguments.length
+    const l: number = arguments.length  // 实参的个数
     return l
       ? l > 1
         ? fn.apply(ctx, arguments)
@@ -178,7 +178,7 @@ export function bind (fn: Function, ctx: Object): Function {
       : fn.call(ctx)
   }
   // record original fn length
-  boundFn._length = fn.length
+  boundFn._length = fn.length  // 函数的形参个数，有default值的不算在内
   return boundFn
 }
 

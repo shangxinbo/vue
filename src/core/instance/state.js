@@ -242,7 +242,7 @@ function initMethods (vm: Component, methods: Object) {
   process.env.NODE_ENV !== 'production' && checkOptionType(vm, 'methods')
   const props = vm.$options.props
   for (const key in methods) {
-    vm[key] = methods[key] == null ? noop : bind(methods[key], vm)
+    vm[key] = methods[key] == null ? noop : bind(methods[key], vm)  // 将method 绑定到vm 上，这个绑定通过call，apply的方式，比原生事件绑定要快
     if (process.env.NODE_ENV !== 'production') {
       if (methods[key] == null) {
         warn(
